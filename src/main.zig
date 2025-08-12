@@ -2,61 +2,43 @@ const std = @import("std");
 const stdout = std.io.getStdOut().writer();
 
 pub fn main() !void {
-    try stdout.print("{s:^10}|{s:^25}|{s:^25}|{s:<128}\n", .{ "type", "max", "min", "bits" });
-    try stdout.print("{s:^10}|{d:^25}|{d:^25}|{b:<128}\n", .{ "i64", std.math.maxInt(i64), std.math.minInt(i64), std.math.maxInt(i64) });
+    try stdout.print("{s:^10} | {s:^40} | {s:<10} | {s:^40} | {s:<10} | {s:<8}\n", .{ "type", "max", "digits", "min", "digits", "bits" });
+    try printTypeInfo(u8);
+    try printTypeInfo(u16);
+    try printTypeInfo(u32);
+    try printTypeInfo(u64);
+    try printTypeInfo(u128);
+    try printTypeInfo(i8);
+    try printTypeInfo(i16);
+    try printTypeInfo(i32);
+    try printTypeInfo(i64);
+    try printTypeInfo(i128);
+    try printTypeInfo(f16);
+    try printTypeInfo(f32);
+    try printTypeInfo(f64);
 }
 
-fn integers() !void {
-    // unsigned integers
-    const u8_int_max: u8 = std.math.maxInt(u8);
-    try stdout.print("u8 max: {d}\n", .{u8_int_max});
-    try stdout.print("u8 bits: {b}\n", .{u8_int_max});
+fn printTypeInfo(T: type) !void {
+    const type_name = @typeName(T);
+    const bits = @bitSizeOf(T);
 
-    const u16_int_max: u16 = std.math.maxInt(u16);
-    try stdout.print("u16 max: {d}\n", .{u16_int_max});
+    var max_value_string: [64]u8 = undefined;
+    var min_value_string: [64]u8 = undefined;
 
-    const u32_int_max: u32 = std.math.maxInt(u32);
-    try stdout.print("u32 max: {d}\n", .{u32_int_max});
+    const type_info = @typeInfo(T);
 
-    const u64_int_max: u64 = std.math.maxInt(u64);
-    try stdout.print("u64 max: {d}\n", .{u64_int_max});
+    const max_slice: []u8 = switch (type_info) {
+        .int => try std.fmt.bufPrint(&max_value_string, "{}", .{std.math.maxInt(T)}),
+        .float => try std.fmt.bufPrint(&max_value_string, "{e}", .{std.math.floatMax(T)}),
+        else => @compileError("Unsupported type"),
+    };
 
-    const u128_int_max: u128 = std.math.maxInt(u128);
-    try stdout.print("u128 max: {d}\n", .{u128_int_max});
+    const min_slice: []u8 = switch (type_info) {
+        .int => try std.fmt.bufPrint(&min_value_string, "{}", .{std.math.minInt(T)}),
+        .float => try std.fmt.bufPrint(&min_value_string, "{e}", .{std.math.floatMin(T)}),
+        else => @compileError("Unsupported type"),
+    };
 
-    // signed integers
-    const i8_int_max: i8 = std.math.maxInt(i8);
-    try stdout.print("i8 max: {d}\n", .{i8_int_max});
-
-    const i8_int_min: i8 = std.math.minInt(i8);
-    try stdout.print("i8 min: {d}\n", .{i8_int_min});
-
-    const i16_int_max: i16 = std.math.maxInt(i16);
-    try stdout.print("i16 max: {d}\n", .{i16_int_max});
-
-    const i16_int_min: i16 = std.math.minInt(i16);
-    try stdout.print("i16 min: {d}\n", .{i16_int_min});
-
-    const i32_int_max: i32 = std.math.maxInt(i32);
-    try stdout.print("i32 max: {d}\n", .{i32_int_max});
-
-    const i32_int_min: i32 = std.math.minInt(i32);
-    try stdout.print("i32 min: {d}\n", .{i32_int_min});
-
-    const i64_int_max: i64 = std.math.maxInt(i64);
-    try stdout.print("i64 max: {d}\n", .{i64_int_max});
-
-    const i64_int_min: i64 = std.math.minInt(i64);
-    try stdout.print("i64 min: {d}\n", .{i64_int_min});
-
-    const i128_int_max: i128 = std.math.maxInt(i128);
-    try stdout.print("i128 max: {d}\n", .{i128_int_max});
-
-    const i128_int_min: i128 = std.math.minInt(i128);
-    try stdout.print("i128 min: {d}\n", .{i128_int_min});
-}
-
-fn floats() !void {
-    const f8_float_max: f16 = std.math.floatMax(f16);
-    try stdout.print("f16 max: {d}\n", .{f8_float_max});
+    // TODO: Add a column to display mantissa bits for float numbers
+    try stdout.print("{s:^10} | {s:^40} (digits: {d:<2}) | {s:^40} (digits: {d:<2}) | {d:<8}\n", .{ type_name, max_slice, max_slice.len, min_slice, min_slice.len, bits });
 }
