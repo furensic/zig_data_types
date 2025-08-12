@@ -2,7 +2,7 @@ const std = @import("std");
 const stdout = std.io.getStdOut().writer();
 
 pub fn main() !void {
-    try stdout.print("{s:^10} | {s:^40} | {s:<10} | {s:^40} | {s:<10} | {s:<8}\n", .{ "type", "max", "digits", "min", "digits", "bits" });
+    try stdout.print("|{s}|{s}|{s}|{s}|\n", .{ "type", "max", "min", "bits" });
     try printTypeInfo(u8);
     try printTypeInfo(u16);
     try printTypeInfo(u32);
@@ -14,8 +14,13 @@ pub fn main() !void {
     try printTypeInfo(i64);
     try printTypeInfo(i128);
     try printTypeInfo(f16);
+    try stdout.print("mantissa: {d}\n", .{std.math.floatMantissaBits(f16)});
     try printTypeInfo(f32);
+    try stdout.print("mantissa: {d}\n", .{std.math.floatMantissaBits(f32)});
     try printTypeInfo(f64);
+    try stdout.print("mantissa: {d}\n", .{std.math.floatMantissaBits(f64)});
+    try printTypeInfo(f128);
+    try stdout.print("mantissa: {d}\n", .{std.math.floatMantissaBits(f128)});
 }
 
 fn printTypeInfo(T: type) !void {
@@ -40,5 +45,5 @@ fn printTypeInfo(T: type) !void {
     };
 
     // TODO: Add a column to display mantissa bits for float numbers
-    try stdout.print("{s:^10} | {s:^40} (digits: {d:<2}) | {s:^40} (digits: {d:<2}) | {d:<8}\n", .{ type_name, max_slice, max_slice.len, min_slice, min_slice.len, bits });
+    try stdout.print("|{s}|description|{s}|{s}|{d:}|\n", .{ type_name, max_slice, min_slice, bits });
 }
